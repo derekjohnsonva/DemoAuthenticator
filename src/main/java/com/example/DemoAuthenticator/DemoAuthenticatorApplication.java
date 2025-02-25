@@ -20,5 +20,4 @@ public class DemoAuthenticatorApplication {
     var two = User.withDefaultPasswordEncoder().roles("user").password("pw").username("two").build();
     return new InMemoryUserDetailsManager(one, two);
   }
-
 }

@@ -3,7 +3,7 @@
 
 logging:
   level:
-    org.springframework.security: trace
+    org.springframework.security: debug
 
 spring:
   application.name: "DemoAuthenticator"
@@ -16,8 +16,8 @@ spring:
         client:
           oidc-client:
             registration:
-              client-id: "oidc-client"
-              client-secret: "{noop}secret"
+              client-id: "0oanj3bxeuT0fcQkD5d7"
+              client-secret: "{noop}x8teF5RY5EudYBRe5m6Hm21Pqqb15VdqeuJrXorESdcNhH2Z2ytFRvi7gQhr74k5"
               client-authentication-methods:
                 - "client_secret_basic"
               authorization-grant-types:
@@ -25,12 +25,14 @@ spring:
                 - "authorization_code"
                 - "refresh_token"
               redirect-uris:
-                - "http://127.0.0.1:8080/login/oauth2/code/oidc-client"
+                # - "http://127.0.0.1:8080/login/oauth2/code/oidc-client"
+                - https://dev-50824006.okta.com/oauth2/v1/authorize/callback
               post-logout-redirect-uris:
                 - "http://127.0.0.1:8080/"
               scopes:
                 - "openid"
                 - "profile"
-                - "user.read"
-                - "user.write"
+                - "email"
+                # - "user.read"
+                # - "user.write"
             require-authorization-consent: true

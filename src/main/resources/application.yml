@@ -1,38 +1,15 @@
 # server:
 #   port: 9000
-
+# server.servlet.session.tracking-modes: cookie
 logging:
   level:
-    org.springframework.security: debug
-
+    org.springframework:
+      security: DEBUG
+      web: DEBUG
+    com.example.DemoAuthenticator: DEBUG
 spring:
   application.name: "DemoAuthenticator"
-  security:
-    user:
-      name: user
-      password: password
-    oauth2:
-      authorizationserver:
-        client:
-          oidc-client:
-            registration:
-              client-id: "0oanj3bxeuT0fcQkD5d7"
-              client-secret: "{noop}x8teF5RY5EudYBRe5m6Hm21Pqqb15VdqeuJrXorESdcNhH2Z2ytFRvi7gQhr74k5"
-              client-authentication-methods:
-                - "client_secret_basic"
-              authorization-grant-types:
-                - "client_credentials"
-                - "authorization_code"
-                - "refresh_token"
-              redirect-uris:
-                # - "http://127.0.0.1:8080/login/oauth2/code/oidc-client"
-                - https://dev-50824006.okta.com/oauth2/v1/authorize/callback
-              post-logout-redirect-uris:
-                - "http://127.0.0.1:8080/"
-              scopes:
-                - "openid"
-                - "profile"
-                - "email"
-                # - "user.read"
-                # - "user.write"
-            require-authorization-consent: true
+  # security:
+  #   user:
+  #     name: user
+  #     password: password

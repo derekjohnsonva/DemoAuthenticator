@@ -4,6 +4,9 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.slf4j.LoggerFactory;
@@ -20,11 +23,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
+import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
+import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.stereotype.Service;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -105,14 +113,73 @@ public class DemoAuthenticatorApplication {
       return keyPair;
     }
 
-    // Expose OIDC endpoints
-    // @Bean
-    // @Order(Ordered.HIGHEST_PRECEDENCE)
-    // public SecurityFilterChain authServerSecurityFilterChain(HttpSecurity http)
-    // throws Exception {
-    // OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-    // return http.formLogin(Customizer.withDefaults()).build();
-    // }
+    @Configuration
+    public class IdTokenCustomizerConfig {
+      @Bean
+      public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer(
+          OidcUserInfoService userInfoService) {
+        return (context) -> {
+          if (OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
+            OidcUserInfo userInfo = userInfoService.loadUser(
+                context.getPrincipal().getName());
+            context.getClaims().claims(claims -> claims.putAll(userInfo.getClaims()));
+          }
+        };
+      }
+    }
+
+  }
+
+  @Service
+  public class OidcUserInfoService {
+
+    private final UserInfoRepository userInfoRepository = new UserInfoRepository();
+
+    public OidcUserInfo loadUser(String username) {
+      return new OidcUserInfo(this.userInfoRepository.findByUsername(username));
+    }
+
+    static class UserInfoRepository {
+
+      private final Map<String, Map<String, Object>> userInfo = new HashMap<>();
+
+      public UserInfoRepository() {
+        this.userInfo.put("user@example.com", createUser("user@example.com"));
+        this.userInfo.put("user2", createUser("user2"));
+      }
+
+      public Map<String, Object> findByUsername(String username) {
+        return this.userInfo.get(username);
+      }
+
+      private static Map<String, Object> createUser(String username) {
+        return OidcUserInfo.builder()
+            .subject(username)
+            .name("First Last")
+            .givenName("First")
+            .familyName("Last")
+            .middleName("Middle")
+            .nickname("User")
+            .preferredUsername(username)
+            .profile("https://example.com/" + username)
+            .picture("https://example.com/" + username + ".jpg")
+            .website("https://example.com")
+            .email(username)
+            .emailVerified(true)
+            .gender("female")
+            .birthdate("1970-01-01")
+            .zoneinfo("Europe/Paris")
+            .locale("en-US")
+            .phoneNumber("+1 (604) 555-1234;ext=5678")
+            .phoneNumberVerified(false)
+            .claim("address",
+                Collections.singletonMap("formatted", "Champ de Mars\n5 Av. Anatole France\n75007 Paris\nFrance"))
+            .updatedAt("1970-01-01T00:00:00Z")
+            .build()
+            .getClaims();
+      }
+    }
+
   }
 
 }

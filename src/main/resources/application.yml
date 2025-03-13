@@ -1,15 +1,7 @@
-# server:
-#   port: 9000
-# server.servlet.session.tracking-modes: cookie
 logging:
   level:
-    org.springframework:
-      security: DEBUG
-      web: DEBUG
-    com.example.DemoAuthenticator: DEBUG
+    "[org.springframework.security]": DEBUG
+    "[org.springframework.web]": DEBUG
+    "[com.example.DemoAuthenticator]": DEBUG
 spring:
   application.name: "DemoAuthenticator"
-  # security:
-  #   user:
-  #     name: user
-  #     password: password

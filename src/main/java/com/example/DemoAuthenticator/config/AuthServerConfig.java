@@ -1,13 +1,7 @@
 package com.example.DemoAuthenticator.config;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -30,11 +24,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
 import com.example.DemoAuthenticator.service.OidcUserInfoService;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
 
 @Configuration
 @EnableWebSecurity
@@ -61,36 +50,6 @@ public class AuthServerConfig {
         .build();
 
     return new InMemoryRegisteredClientRepository(oktaClient);
-  }
-
-  // Configure JWK for token signing
-  @Bean
-  public JWKSource<SecurityContext> jwkSource() {
-    KeyPair keyPair = generateRsaKey();
-    RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-    RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-    RSAKey rsaKey = new RSAKey.Builder(publicKey)
-        .privateKey(privateKey)
-        .keyID(UUID.randomUUID().toString())
-        .build();
-
-    Logger logger = LoggerFactory.getLogger(AuthServerConfig.class);
-    logger.debug("Generated RSA Public Key: {}", rsaKey.toPublicJWK().toJSONString());
-    logger.debug("Generated RSA Private Key: {}", rsaKey.toJSONString());
-    JWKSet jwkSet = new JWKSet(rsaKey);
-    return new ImmutableJWKSet<>(jwkSet);
-  }
-
-  private static KeyPair generateRsaKey() {
-    KeyPair keyPair;
-    try {
-      KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-      keyPairGenerator.initialize(2048);
-      keyPair = keyPairGenerator.generateKeyPair();
-    } catch (Exception ex) {
-      throw new IllegalStateException(ex);
-    }
-    return keyPair;
   }
 
   @Configuration
